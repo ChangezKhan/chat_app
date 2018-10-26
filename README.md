@@ -11,7 +11,16 @@
 ```
 cd <PROJECT_FOLDER>
 python -m virtualenv venv
+```
+
+* For Unix Users:
+```
 source venv/bin/activate
+```
+
+* For Windows Users:
+```
+venv/bin/activate
 ```
 
 * After that, we will install all the required packages using `pip`
