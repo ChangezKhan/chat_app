@@ -1,0 +1,229 @@
+{% extends "layout.html" %}
+    extends "layout.html" %}    
+    {% block head %}
+    <style>
+        body{margin:0;padding:0;}
+        * {
+            -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+            -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+            box-sizing: border-box;         /* Opera/IE 8+ */
+        }
+        .current-chat {
+            height: 50vh;
+            border: 1px solid #ddd;
+        }
+        .container-fluid{
+            width: 90%;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
+            padding-top: 15px;
+            padding-bottom: 15px;
+        }
+        #contact {
+          height: auto;
+          background: #ececec;
+          position:absolute;
+          right:0;
+          bottom:0;
+          width:100px;
+        }
+        #contact header {
+            padding: 10px;
+            background: #333;
+            color: #FFF;
+        }
+        #contact main { 
+            padding: 10px
+        }
+        .modal-backdrop.in {
+            opacity: 1;
+        }
+        #chat {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 100px;
+            height: auto;
+        }
+        #chat .user {
+            border: 1px solid #333;
+            background: #fff;
+            width: 300px;
+            height: 100%;
+            float: left;
+            margin-right: 5px;
+        }
+        .user header {
+            position: relative;
+            background: #4b67a8;
+            border: 1px solid #2e4588;
+        }
+        .user header .status {
+            position: absolute;
+            top: 36%;
+            left: 10px;
+            width: 8px;
+            height: 8px;
+            -webkit-border-radius: 4px; 
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+            background: green;
+        }
+        .user header .header-text {
+            color: #fff;
+            font-weight: bold;
+            padding: 8px;
+            margin: 0 0 0 15px;
+            font-size: 12px;
+            text-shadow: 0 -1px rgba(0, 0, 0, .25);
+        }
+        .user header .close { 
+            position: absolute;
+            right: 5px;
+            top: 7px;
+            color: #fff;
+        }
+        .message-area {
+            background: #fff;
+            height: 250px;
+            padding: 5px;
+            color: #333;
+            overflow: scroll;
+        }
+        .user .input-area {
+            border-top: 1px solid #333;
+            padding: 3px;
+        }
+        .user .input-area input {
+            padding: 5px;
+            width: 100%;
+            font-size: 12px;
+            border: none;
+            outline: none;
+        }
+    </style>
+    {% endblock %}
+    {% block content %}
+
+        <!-- Modal HTML -->
+        <!--
+        <div id="myModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">My Chat App</h4>
+                    </div>
+                    <form action="" method="POST">
+                        <div class="modal-body">
+                            <input type="text" class="username form-control" id="user_name" name="user_name" placeholder="User Name" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success btn-block"><span class="glyphicon glyphicon-send"></span> Send</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        -->
+         <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-9">
+                    <div class="jumbotron">
+                        <h1>Hello <span id='username'>{{ name }}</span></h1>   
+                        <p>This is a simple chat application where you can chat with any user available in chat notification window. Thank you.</p>
+                      </div>
+                </div>
+                <div class="col-sm-3 current-chat">
+                    <div class="row">
+                        <table class="table">
+                            <thead class="thead-inverse"><tr><th>Chat Notifications<a href="#" onclick="leave_room();"> Leave this room</a></th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="col-sm-12">
+                                            <div id="user_list"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="chat"></div>
+    {% endblock %}
+    {% block footer_script%}
+    <script>
+
+        function openChatBox(el){
+            var sID = $(el).attr('id');
+            if($("." + sID).length == 0) {
+                var targetUser = ($(el).html());
+                $(document).data('chat.sID', sID);
+                var user = '<div class="user open ' + sID + '"><header><div class="status"></div><div class="header-text">' + targetUser + '</div><div class="close"></div></header><div class="message-area"></div><div class="input-area"><input type="text" id="input" /></div></div>';
+                $('#chat').append(user);
+            }
+        }
+        
+	user_name = $('#username').text();
+
+        socket.on( 'connect', function() {
+	    console.log(user_name); 
+            socket.emit( 'my event', {
+                user_name : user_name
+            });
+        });
+
+        socket.on( 'my response', function( msg ) {
+            var today = new Date();
+            var date = today.getDate()+'-'+(today.getMonth()+1)+'-'+today.getFullYear();
+            var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+            var dateTime = date+' '+time;
+            $('#myModal').modal('hide');
+            if($( '#username' ).html() !=  msg.json.user_name)
+                $('#user_list').append("<div id='"+msg.json.user_name+"'>" + dateTime + ": <a id='"+msg.room+"' class='personal_chat' href='#' onclick='openChatBox(this)'>" + msg.json.user_name + "</a> has joined.</div><br>");
+        });
+
+        $('#chat').on('keydown', '#input', function(event) {
+            if (event.keyCode == 13) {
+                var sID = $(document).data('chat.sID');
+                var txt = $(this).val();                
+                socket.emit('text', {
+                    msg: txt,
+                    room: sID
+                });
+                $('.' + sID + ' .message-area').append(user_name + ': ' + txt + '<br/>');
+                $(this).val('');
+            }
+        });
+
+        socket.on('message', function(data) {
+            if($("." + data.room).length == 0) {         
+                $(document).data('chat.sID', data.room);
+                var user = '<div class="user open ' + data.room + '"><header><div class="status"></div><div class="header-text">' + data.from + '</div><div class="close"></div></header><div class="message-area"></div><div class="input-area"><input type="text" id="input" /></div></div>';
+                $('#chat').append(user);
+            }            
+            $('.' + data.room + ' .message-area').append(data.from+ ': ' + data.chat_message + '<br/>');
+        });
+
+        socket.on('left room', function(data) {
+            var today = new Date();
+            var date = today.getDate()+'-'+(today.getMonth()+1)+'-'+today.getFullYear();
+            var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+            var dateTime = date+' '+time;
+            if($( '#username' ).html() !=  data.from)
+                $('#user_list').append("<div id='"+ data.from+"'>" + dateTime + ": " + data.from + " has left the room.</div><br>");
+        });
+
+        function leave_room() {
+            socket.emit('left', function() {
+                socket.disconnect();
+                window.location.href = "{{ url_for('index') }}";
+            });
+        }
+
+    </script>
+    {% endblock %}
