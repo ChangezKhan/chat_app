@@ -4,6 +4,10 @@
 
 #### Also, we have used *FLASK* web framework which is lightweight framework compare to other frameworks.
 
+#### Demo
+
+![Demo](https://raw.githubusercontent.com/changezkhan/crm/master/chat_app.gif)
+
 ## Instructions to install the app ##
 
 * First of all, you'll need to create python virtual environment and activate. Use following lines of code for that.
